@@ -127,8 +127,8 @@ echo \
    tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 apt-get update
-apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-docker run hello-world
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# docker run hello-world
 
 locale-gen en_US.UTF-8
 systemctl enable nfs-server
