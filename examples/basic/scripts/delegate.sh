@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo systemctl enable docker
+sudo systemctl start docker
+
 # This didn't seem to be enabled
 # cat /sys/fs/cgroup/user.slice/user-$(id -u).slice/user@$(id -u).service/cgroup.controllers
 sudo mkdir -p /etc/systemd/system/user@.service.d
