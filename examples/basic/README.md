@@ -65,6 +65,12 @@ done
 echo "Found login user ${login_user}"
 ```
 
+And we only need to copy scripts once (the $HOME is an NFS share). Also take note of the username.
+
+```bash
+gcloud compute scp ./scripts --recurse usernetes-compute-001:/home/sochat1_llnl_gov --zone=us-central1-a
+```
+
 Next we will:
 
 1. Change the uid/gid this might vary for you - change the usernames based on the users you have)
@@ -85,12 +91,6 @@ One sanity check:
 
 ```bash
 gcloud compute ssh $instance --zone us-central1-a -- cat /etc/subgid
-```
-
-And we only need to copy scripts once (the $HOME is an NFS share). Also take note of the username.
-
-```bash
-gcloud compute scp ./scripts --recurse usernetes-compute-001:/home/sochat1_llnl_gov --zone=us-central1-a
 ```
 
 For the rest of this experiment we will work to setup each node. Since there are different steps per node,
@@ -311,7 +311,9 @@ $ which socat
 
 A sochat knows a socat :)
 Also note that we export the `KUBECONFIG` in the user bash profile so it should be there
-when we log in again.
+when we log in again. 
+
+*TODO* should we put some kind of wait for all the pods to be running? I usually just wait and check.
 
 ### Worker Node
 
@@ -491,7 +493,8 @@ cd /opt/usernetes/hack
 ./test-smoke.sh
 ```
 
-Debugging output is included below - looks like an issue with flannel.
+Debugging output is included below - looks like an issue with flannel. Note that we want
+to do `make logs` on both the control plane and a worker node! 
 
 <details>
 
