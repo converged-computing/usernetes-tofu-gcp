@@ -3,8 +3,8 @@
 # sudo systemctl enable docker
 # sudo systemctl start docker
 
-# This is now done in the image build
-# sudo apt-get install -y uidmap
+# Sometimes it tells me things aren't installed, not sure why
+sudo apt-get update && sudo apt-get install -y uidmap systemd
 
 # This didn't seem to be enabled
 # cat /sys/fs/cgroup/user.slice/user-$(id -u).slice/user@$(id -u).service/cgroup.controllers
@@ -21,9 +21,6 @@ cat /sys/fs/cgroup/user.slice/user-$(id -u).slice/user@$(id -u).service/cgroup.c
 sudo loginctl enable-linger $(whoami)
 dockerd-rootless-setuptool.sh install
 
-# Get the weird id from /run/user
-uid=$(ls /run/user)
-
 # TODO we need to install rootless docker, I found I could do on one node and
 # the others would have issues, so I'm sticking with regular docker for now :)
 # WARNING: systemd not found. You have to remove XDG_RUNTIME_DIR manually on every logout.
@@ -36,3 +33,4 @@ echo "export DOCKER_HOST=unix://${XDG_RUNTIME_DIR}/docker.sock" >> ~/.bashrc
 sudo modprobe vxlan
 sudo systemctl daemon-reload
 docker run hello-world
+sudo loginctl enable-linger $(whoami)

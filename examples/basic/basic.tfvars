@@ -9,7 +9,7 @@ compute_node_specs = [
   {
     name_prefix  = "usernetes-compute"
     machine_arch = "x86-64"
-    machine_type = "c2-standard-8"
+    machine_type = "c2-standard-16"
     gpu_type     = null
     gpu_count    = 0
     compact      = false
@@ -38,7 +38,6 @@ if [[ "X$nfsmounts" != "X" ]]; then
     echo "Enabling NFS mounts"
     share=$(echo $nfsmounts | jq -r '.share')
     mountpoint=$(echo $nfsmounts | jq -r '.mountpoint')
-
     bash -c "sudo echo $share $mountpoint nfs defaults,hard,intr,_netdev 0 0 >> /etc/fstab"
     mount -a
 fi

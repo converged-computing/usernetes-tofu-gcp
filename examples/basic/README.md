@@ -65,7 +65,7 @@ done
 echo "Found login user ${login_user}"
 ```
 
-Next we will:
+I usually give a minute or two for the startup script. Next we will:
 
 1. Change the uid/gid this might vary for you - change the usernames based on the users you have)
 2. Copy scripts to home
@@ -82,29 +82,45 @@ for i in 1 2 3; do
   gcloud compute ssh $instance --zone us-central1-a -- sudo sed -i "s/sochat1_llnlgov/sochat1_llnl_gov/g" /etc/subgid
   gcloud compute scp ./scripts --recurse ${instance}:/home/sochat1_llnl_gov --zone=us-central1-a
   gcloud compute ssh $instance --zone us-central1-a -- /bin/bash /home/sochat1_llnl_gov/scripts/rootless.sh
-  # Commented out because we have rootless docker
-  # gcloud compute ssh $instance --zone us-central1-a -- sudo usermod -aG docker sochat1_llnl_gov
 done
 ```
 
-The above could be a script, but a copy pasted loop is fine for now.
+Note that sometimes I see:
+
+```console
+cat: /sys/fs/cgroup/user.slice/user-501043911.slice/user@501043911.service/cgroup.controllers: No such file or directory
+Failed to connect to bus: No such file or directory
+[INFO] systemd not detected, dockerd-rootless.sh needs to be started manually:
+```
+
+And I'm not sure why - it's like the setup is somehow wonky. The above could be a script, but a copy pasted loop is fine for now.
 For the rest of this experiment we will work to setup each node. Since there are different steps per node,
 we are going to clone usernetes to a non-shared location. 
 
 ### Control Plane
 
 Let's treat instance 001 as the control plane.  We will run the script from
-here.
+here. Here is a manual way:
+
+```bash
+gcloud compute ssh usernetes-compute-001 --zone us-central1-a
+/bin/bash /home/sochat1_llnl_gov/scripts/001-control-plane.sh
+source ~/.bashrc
+# And then kubectl get nodes, etc. will work
+```
+
+And automated:
 
 ```bash
 instance=usernetes-compute-001
 gcloud compute ssh $instance --zone us-central1-a -- /bin/bash /home/sochat1_llnl_gov/scripts/001-control-plane.sh
 ```
 
-Copy the kubeconfig to your host:
+We would want this to be even more automated, somehow. Exit (if you shelled in) and copy the kubeconfig to your host:
 
 ```bash
 # Copy from control plane to local host
+rm -rf ./join-command
 control=usernetes-compute-001   
 gcloud compute scp ${control}:/opt/usernetes/join-command ./join-command --zone=us-central1-a
 
@@ -115,9 +131,16 @@ for i in 2 3; do
 done
 ```
 
+Note that I waited a few minutes here, just in case anything was pulling or otherwise getting setup.
+
 ### Worker Node
 
-Now let's do the same setup for each worker node:
+Now let's do the same setup for each worker node. Here is the manual way, for each node:
+
+```bash
+gcloud compute ssh usernetes-compute-002 --zone us-central1-a
+/bin/bash /home/sochat1_llnl_gov/scripts/worker-node.sh
+```
 
 ```bash
 for i in 2 3; do
@@ -190,7 +213,7 @@ These are the items we need to do to make this setup better.
 
  - Add back the nfs mount to `/home` it's largely useless now. The issue here is setting up docker, see link in main.tf for suggestion
  - More automation of setup - not ideal that we have to run so many things! These could be startup scripts I think.
-
+ - The egress is a bit open and too permissive :)
 
 We can work on debugging this. Here is how to interact or debug.
 

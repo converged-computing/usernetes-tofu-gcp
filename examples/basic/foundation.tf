@@ -53,6 +53,27 @@ module "firewall" {
   network_name = module.network.network_name
   rules = [
     {
+      name                    = "${var.network_name}-allow-kubeapi"
+      direction               = "EGRESS"
+      priority                = null
+      description             = null
+      ranges                  = ["0.0.0.0/0"]
+      source_tags             = null
+      source_service_accounts = null
+      target_tags             = ["usernetes"]
+      target_service_accounts = null
+      allow = [
+        {
+          protocol = "tcp"
+          ports    = ["6443"]
+        }
+      ],
+      deny = []
+      log_config = {
+        metadata = "INCLUDE_ALL_METADATA"
+      }
+    },
+    {
       name                    = "${var.network_name}-allow-ssh"
       direction               = "INGRESS"
       priority                = null

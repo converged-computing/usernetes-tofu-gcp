@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+# This is probably excessive
+systemctl --user enable docker.service
+systemctl --user start docker.service
+sudo loginctl enable-linger $(whoami)
+
 # This should not work if docker is not setup
 docker run hello-world
 
@@ -14,9 +19,6 @@ git clone https://github.com/rootless-containers/usernetes /opt/usernetes
 echo "Contents of /opt/usernetes"
 ls /opt/usernetes
 cd /opt/usernetes
-
-# Adding this in unecessary places...
-sudo loginctl enable-linger $(whoami)
 
 # And finally, install and enable kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
