@@ -94,6 +94,11 @@ apt-get update && \
         python3-yaml && \
     rm -rf /var/lib/apt/lists/*
 
+# This is for rootless docker
+apt-get update && apt-get install -y \
+     uidmap \
+     dbus-user-session
+
 # Other deps
 apt-get update && \
     apt-get -qq install -y --no-install-recommends \
@@ -106,7 +111,7 @@ apt-get update && \
         liblua5.2-dev \
         liblz4-dev \
         libsqlite3-dev \
-        uuid-dev \
+        uuid-dev \        
         libhwloc-dev \
         libmpich-dev \
         libs3-dev \
@@ -115,20 +120,29 @@ apt-get update && \
         libpam-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# install docker
-apt-get update && apt-get install ca-certificates curl gnupg
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
+# install docker (this is in place of rootless)
+# apt-get update && apt-get install ca-certificates curl gnupg
+# install -m 0755 -d /etc/apt/keyrings
+# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+# chmod a+r /etc/apt/keyrings/docker.gpg
 
-echo \
-   "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-   tee /etc/apt/sources.list.d/docker.list > /dev/null
+# echo \
+#  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+#  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+#  tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# apt-get update
+# apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 # docker run hello-world
+
+# This is for rootless docker
+curl -o install.sh -fsSL https://get.docker.com
+sh install.sh
+# This is run by the user
+# dockerd-rootless-setuptool.sh install
+
+# For a random mount
+mkdir -p /work
 
 locale-gen en_US.UTF-8
 systemctl enable nfs-server

@@ -10,8 +10,11 @@ module "cluster" {
   }
 
   subnetwork = module.network.subnets_self_links[0]
+  # Modified from /home because rootless docker needs to be isolated using home 
+  # See https://github.com/rootless-containers/usernetes/pull/287#issuecomment-1707454442 
+  # for another idea. Also - this won't currently work, would need to update base image exports
   cluster_storage = {
-    mountpoint = "/home"
+    mountpoint = "/work"
     share      = "${module.nfs_server_instance.instances_details.0.network_interface.0.network_ip}:/var/nfs/home"
   }
   compute_node_specs = var.compute_node_specs
