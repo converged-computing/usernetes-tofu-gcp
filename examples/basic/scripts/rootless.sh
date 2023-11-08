@@ -4,6 +4,7 @@
 # sudo systemctl start docker
 
 # Sometimes it tells me things aren't installed, not sure why
+export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update && sudo apt-get install -y uidmap systemd
 
 # This didn't seem to be enabled

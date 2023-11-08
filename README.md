@@ -1,9 +1,8 @@
-# Terraform Usernetes on Google Cloud
+# Usernetes on Google Cloud
 
-Terraform module to create Google Cloud images for Usernetes development using HashiCorp Packer.
-We are going off of the pull request [here](https://github.com/rootless-containers/usernetes/pull/287) 
-and development is happening in [examples/basic](examples/basic). Note that we are installing
-docker to the VM, and the hope is that this is mostly interchangeable with podman.
+> Using OpenTofu
+
+This is an OpenTofu module to create Google Cloud images for Usernetes development using HashiCorp Packer. We are going off of the pull request [here](https://github.com/rootless-containers/usernetes/pull/287)  and development is happening in [examples/basic](examples/basic). Note that we are installing docker to the VM, and the hope is that this is mostly interchangeable with podman.
 
 ## Usage
 
@@ -32,7 +31,7 @@ cd ./build-images/compute
 $ make
 ```
 
-### Deploy with Terraform
+### Deploy with OpenTofu
 
 You can build images under [build-images](build-images) and then use the modules
 provided in [tf](tf). An example is provided in [examples/basic](examples/basic).

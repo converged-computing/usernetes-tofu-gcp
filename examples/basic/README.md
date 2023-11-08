@@ -3,6 +3,7 @@
 > This is intended to be a basic example.
 
 We are using generation 2 of [usernetes](https://github.com/rootless-containers/usernetes).
+This will use [OpenTofu](https://opentofu.org) to deploy an EKS cluster. This is the first time I'm doing this, so consider it a WIP. You should first [install](https://opentofu.org/docs/intro/install) it for your platform of choice.
 
 # Usage
 
@@ -16,7 +17,7 @@ First, edit variables in [basic.tfvars](basic.tfvars). This will determine numbe
 Initialize the deployment with the command:
 
 ```bash
-$ terraform init
+$ tofu init
 ```
 
 I find it's easiest to export my Google project in the environment for any terraform configs
@@ -61,8 +62,8 @@ are off is because Google is using OS login.
 for i in 1 2 3; do
   instance=usernetes-compute-00${i}
   login_user=$(gcloud compute ssh $instance --zone us-central1-a -- whoami)
+  echo "Found login user ${login_user}"
 done
-echo "Found login user ${login_user}"
 ```
 
 I usually give a minute or two for the startup script. Next we will:
@@ -85,7 +86,8 @@ for i in 1 2 3; do
 done
 ```
 
-Note that sometimes I see:
+Note that when I was testing, I commented out the last line and ran this manually in each instance. It worked at least the time I am writing this.
+What made it work (from a dbus error before) was adding `sudo apt-get ugpgrade` to the build-images setup. When I didn't do that, I saw:
 
 ```console
 cat: /sys/fs/cgroup/user.slice/user-501043911.slice/user@501043911.service/cgroup.controllers: No such file or directory
@@ -93,17 +95,39 @@ Failed to connect to bus: No such file or directory
 [INFO] systemd not detected, dockerd-rootless.sh needs to be started manually:
 ```
 
-And I'm not sure why - it's like the setup is somehow wonky. The above could be a script, but a copy pasted loop is fine for now.
-For the rest of this experiment we will work to setup each node. Since there are different steps per node,
-we are going to clone usernetes to a non-shared location. 
-
 ### Control Plane
 
 Let's treat instance 001 as the control plane.  We will run the script from
-here. Here is a manual way:
+here. Here is a manual way. Shell in:
 
 ```bash
 gcloud compute ssh usernetes-compute-001 --zone us-central1-a
+```
+
+I ran into this error that this needs to be 2:
+
+```bash
+$ grep [01] /proc/sys/net/ipv4/conf/*/rp_filter|egrep "default|all"
+/proc/sys/net/ipv4/conf/all/rp_filter:1
+```
+
+So then I did:
+
+```bash
+$ sudo vim /etc/sysctl.conf
+vsochat_gmail_com@usernetes-compute-001:/opt/usernetes$ sudo sysctl -p
+net.ipv4.conf.default.rp_filter = 2
+```
+
+And restarted docker:
+
+```bashg
+systemctl --user restart docker.service
+```
+
+And then run:
+
+```bash
 /bin/bash /home/sochat1_llnl_gov/scripts/001-control-plane.sh
 source ~/.bashrc
 # And then kubectl get nodes, etc. will work
@@ -139,8 +163,33 @@ Now let's do the same setup for each worker node. Here is the manual way, for ea
 
 ```bash
 gcloud compute ssh usernetes-compute-002 --zone us-central1-a
+```
+
+We need the same updates here:
+
+```bash
+$ sudo vim /etc/sysctl.conf
+```
+```diff
+- #net.ipv4.conf.default.rp_filter=1
++ net.ipv4.conf.default.rp_filter=2
+```
+```bash
+$ sudo sysctl -p
+net.ipv4.conf.default.rp_filter = 2
+```
+
+And restarted docker:
+
+```bashg
+systemctl --user restart docker.service
+```
+
+```bash
 /bin/bash /home/sochat1_llnl_gov/scripts/worker-node.sh
 ```
+
+If the above can be automated, we would just do:
 
 ```bash
 for i in 2 3; do
@@ -148,6 +197,8 @@ for i in 2 3; do
   gcloud compute ssh $instance --zone us-central1-a -- /bin/bash /home/sochat1_llnl_gov/scripts/worker-node.sh
 done
 ```
+
+I did this manually for both worker nodes for now, and not closing the terminal in case that made it wonky.
 
 ### Testing
 
@@ -166,7 +217,7 @@ echo $KUBECONFIG
 /opt/usernetes/kubeconfig
 ```
 
-And the moment of truth...
+And the moment of truth (note that I have no reproduced this again, unfortunately)...
 
 ```bash
 $ kubectl get nodes

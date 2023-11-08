@@ -3,22 +3,22 @@ all: init fmt validate deploy
 
 .PHONY: init
 init: 
-	terraform init
+	tofu init
 	
 .PHONY: fmt
 fmt: 
-	terraform fmt
+	tofu fmt
 
 .PHONY: validate
 validate: 
-	terraform validate
+	tofu validate
 	
 .PHONY: deploy
 deploy: 
 	export GOOGLE_PROJECT=$(gcloud config get-value core/project)
-	terraform apply -var-file basic.tfvars -var region=us-central1 -var project_id=$(gcloud config get-value core/project) -var network_name=foundation-net -var zone=us-central1-a
+	tofu apply -var-file basic.tfvars -var region=us-central1 -var project_id=$(gcloud config get-value core/project) -var network_name=foundation-net -var zone=us-central1-a
 
 .PHONY: destroy
 destroy: 
 	export GOOGLE_PROJECT=$(gcloud config get-value core/project)
-	terraform destroy -var-file basic.tfvars -var region=us-central1 -var project_id=$(gcloud config get-value core/project) -var network_name=foundation-net -var zone=us-central1-a
+	tofu destroy -var-file basic.tfvars -var region=us-central1 -var project_id=$(gcloud config get-value core/project) -var network_name=foundation-net -var zone=us-central1-a

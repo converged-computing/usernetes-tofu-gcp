@@ -1,5 +1,6 @@
 module "cluster" {
-  source     = "github.com/converged-computing/usernetes-terraform-gcp//tf"
+  source = "../../tf"
+  # source     = "github.com/converged-computing/usernetes-tofu-gcp//tf"
   project_id = var.project_id
   region     = var.region
 

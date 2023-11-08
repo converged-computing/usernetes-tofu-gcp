@@ -6,6 +6,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 # This first section from src/test/docker/bionic/Dockerfile in flux-core
 # https://github.com/flux-framework/flux-core/blob/master/src/test/docker/bionic/Dockerfile
+apt-get upgrade && \
 apt-get update && \
     apt-get -qq install -y --no-install-recommends \
     apt-utils nfs-kernel-server nfs-common firewalld && \
